@@ -28,7 +28,7 @@ public class TOSI extends JournalCrawler {
 
     /**
      * Specific implementation of the TOSI class. 
-     * @param url Url reference to conference or journal homepage that contains all proceedings or volumes history.
+     * @param url Url reference to journal homepage that contains all volumes history.
      */
     @Override
     public boolean searchVolumes(String url) {
@@ -49,7 +49,6 @@ public class TOSI extends JournalCrawler {
                 String temp = "" + blocks.select("a").get(0).attr("abs:href");
                 if (temp.contains("isnumber") && temp.contains("&punumber=32") && !temp.contains("mostRecent")) {
                     for (Element link : blocks.select("a[href]")) {
-//                        System.out.println(link.absUrl("href"));
                         this.volumes.add(link.absUrl("href"));
                     }
                 }
@@ -61,14 +60,11 @@ public class TOSI extends JournalCrawler {
             e.printStackTrace();
             return false;
         }
-//        this.volumes.add("http://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=6312811&punumber=32");
-//        return true;
 
     }
 
     /**
      * Specific implementation of the TOSI class. 
-     * @param url Url reference to conference or journal homepage that contains all proceedings or volumes history.
      */
     @Override
     protected void searchPapers() {
@@ -89,10 +85,8 @@ public class TOSI extends JournalCrawler {
 
                 for (Element link : blocks.select("a[class='art-abs-url']")) {
                     this.papers.add(link.absUrl("href"));
-//                    System.out.println(link.absUrl("href"));
                 }
                 
-//                return true;
             } catch (IOException e) {
                 return;
             }
@@ -101,9 +95,5 @@ public class TOSI extends JournalCrawler {
         }
         System.out.println("Busca concluída!");
     }
-
-//    @Override
-//    public void processPaper() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
+    
 }

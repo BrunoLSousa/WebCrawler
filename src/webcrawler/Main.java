@@ -5,8 +5,10 @@
  */
 package webcrawler;
 
+import webcrawler.algorithm.ConferenceCrawler;
 import webcrawler.algorithm.journal.TOSI;
 import webcrawler.algorithm.JournalCrawler;
+import webcrawler.algorithm.conference.IEEE;
 
 /**
  * Main class of this project
@@ -19,8 +21,10 @@ public class Main {
      * @param args The command line arguments
     */
     public static void main(String[] args){
-        JournalCrawler journal = new TOSI();
-        journal.search("http://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=32");
+//        JournalCrawler journal = new TOSI();
+//        journal.search("http://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=32");
+        ConferenceCrawler conference = new IEEE();
+        conference.search("http://ieeexplore.ieee.org/xpl/conhome.jsp?punumber=1000691");
     }
     
 }
