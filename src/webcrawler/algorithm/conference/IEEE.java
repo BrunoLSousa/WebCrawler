@@ -6,6 +6,10 @@
 package webcrawler.algorithm.conference;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,7 +18,9 @@ import org.jsoup.select.Elements;
 import webcrawler.algorithm.ConferenceCrawler;
 
 /**
- *This class specify the ConferenceCrawler class. Its goal is to search papers link reference to IEEE journal.
+ * This class specify the ConferenceCrawler class. Its goal is to search papers
+ * link reference to IEEE journal.
+ *
  * @author bruno & mivian
  */
 public class IEEE extends ConferenceCrawler {
@@ -24,13 +30,15 @@ public class IEEE extends ConferenceCrawler {
     /**
      * Constructor method of this class.
      */
-    public IEEE(){
+    public IEEE() {
         super();
     }
-    
+
     /**
-     * Specific implementation of the IEEE class. 
-     * @param url Url reference to conference homepage that contains all proceedings history.
+     * Specific implementation of the IEEE class.
+     *
+     * @param url Url reference to conference homepage that contains all
+     * proceedings history.
      */
     @Override
     public boolean searchProceedings(String url) {
@@ -60,7 +68,7 @@ public class IEEE extends ConferenceCrawler {
     }
 
     /**
-     * Specific implementation of the IEEE class. 
+     * Specific implementation of the IEEE class.
      */
     @Override
     protected void searchPapers() {
@@ -69,29 +77,28 @@ public class IEEE extends ConferenceCrawler {
         float percent;
         System.out.println("Inicializando busca de artigos....");
         for (String proceeding : this.proceedings) {
-            try {
-                Connection connection = Jsoup.connect(proceeding).userAgent(USER_AGENT);
-                htmlDocument = connection.get();
-                
+            htmlDocument = connectURL(proceeding);
+            Set<String> volumes = mineVolumes(htmlDocument);
+            do {
                 int pages = calculatePagination(htmlDocument);
-                String url = getFilter(htmlDocument, proceeding);
+                String url = getFilter(htmlDocument);
                 
-                for(int i = 1; i <= pages; i++){
+                for (int i = 1; i <= pages; i++) {
                     Elements blocks = htmlDocument.select("ul[class='results']");
                     
-                    for (Element link : blocks.select("a[class='art-abs-url']")) {
-                        this.papers.add(link.absUrl("href"));
+                    for (Element content : blocks.select("li")) {
+                        if(!content.select("a[class='art-abs-url']").attr("href").isEmpty() && !content.select("div[class='authors']").text().isEmpty()){
+                            this.papers.add(content.select("a[class='art-abs-url']").get(0).absUrl("href"));
+                        }
                     }
                     
-                    if((i + 1) <= pages){
-                        connection = Jsoup.connect(url + (i+1)).userAgent(USER_AGENT);
-                        htmlDocument = connection.get();
-                    }
+                    htmlDocument = ((i + 1) <= pages) ? connectURL(url + (i + 1)) : htmlDocument;
                     
                 }
-            } catch (IOException e) {
-                return;
-            }
+                volumes.remove(proceeding);
+                proceeding = (!volumes.isEmpty()) ? volumes.iterator().next() : proceeding;
+                htmlDocument = (!volumes.isEmpty()) ? connectURL(proceeding) : htmlDocument;
+            } while (!volumes.isEmpty());
             System.out.println(cont + "/" + this.proceedings.size() + " concluído...");
             cont++;
         }
@@ -99,8 +106,11 @@ public class IEEE extends ConferenceCrawler {
     }
 
     /**
-     * Calculate the amount of pages existing at a specific proceeding based on the pagination size to get all links. 
-     * @param htmlDocument Document of first page already open to obtain information about pages number.
+     * Calculate the amount of pages existing at a specific proceeding based on
+     * the pagination size to get all links.
+     *
+     * @param htmlDocument Document of first page already open to obtain
+     * information about pages number.
      */
     private int calculatePagination(Document htmlDocument) {
         Elements bolds = htmlDocument.select("div[class='results-display']> b");
@@ -109,15 +119,55 @@ public class IEEE extends ConferenceCrawler {
         int totalLinks = Integer.parseInt(bolds.get(1).text());
         return ((totalLinks % limit) == 0) ? totalLinks / limit : (totalLinks / limit) + 1;
     }
-    
+
     /**
-     * Calculate the amount of pages existing at a specific proceeding based on the pagination size to get all links. 
-     * @param htmlDocument Document of first page already open to obtain information about url filter.
+     * Calculate the amount of pages existing at a specific proceeding based on
+     * the pagination size to get all links.
+     *
      * @param htmlDocument Home page proceeding link.
      */
-    private String getFilter(Document htmlDocument, String proceeding){
+    private String getFilter(Document htmlDocument) {
         Element oqs = htmlDocument.getElementById("oqs");
-        String url = proceeding + "&" + oqs.val() + "&pageNumber=";
+        String url = htmlDocument.location() + "&" + oqs.val() + "&pageNumber=";
         return url;
     }
+    
+    /**
+     * Returns the html content of a url.
+     *
+     * 
+     * @param htmlDocument Home page proceeding link.
+     */
+    private Document connectURL(String url){
+        Connection connection;
+        try {
+            connection = Jsoup.connect(url).userAgent(USER_AGENT);
+            return connection.get();
+        } catch (IOException ex) {
+            Logger.getLogger(IEEE.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }  
+    
+    /**
+     * Mines the volumes existing at a specific proceeding.
+     *
+     * 
+     * @param htmlDocument Home page proceeding link.
+     */
+    private Set<String> mineVolumes(Document htmlDocument){
+        Set<String> urlVolumes = new LinkedHashSet<>();
+        Elements blocks = htmlDocument.select("select[id='sel_is_number'] > option");
+        if(!blocks.isEmpty()){
+            String currentNumber = htmlDocument.location().split("=")[1];
+            String proceeding = htmlDocument.location().replace("punumber", "isnumber");
+            for(Element option: blocks){
+                if(!option.attr("selected").contains("true")){
+                    urlVolumes.add(proceeding.replace(currentNumber, option.attr("value")));
+                }
+            }
+        }
+        return urlVolumes;
+    }
+    
 }
