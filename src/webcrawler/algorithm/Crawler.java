@@ -18,12 +18,14 @@ public abstract class Crawler {
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1";
     
     protected List<String> papers;
+    private Parser parser;
     
     /**
      * Constructor method of this class.
      */
     public Crawler(){
         this.papers = new LinkedList<>();
+        this.parser = new Parser();
     }
     
     /**
@@ -37,8 +39,9 @@ public abstract class Crawler {
     /**
      * Initialize the links search. 
      * @param url Url reference to conference or journal homepage that contains all proceedings or volumes history.
+     * @param acronym It is an abbreviation of the vehicle's name that the url belong. 
      */
-    public void search(String url){
+    public void search(String url, String acronym){
         if(this instanceof ConferenceCrawler){
             ((ConferenceCrawler) this).searchProceedings(url);
         }else{
@@ -46,6 +49,7 @@ public abstract class Crawler {
         }
         searchPapers();
         System.out.println("Total de artigos encontrados: " + this.papers.size());
+        parser(acronym);
     }
     
     /**
@@ -53,6 +57,8 @@ public abstract class Crawler {
      */
     protected abstract void searchPapers();
     
-//    public abstract void processPaper();
+    private void parser(String acronym){
+        this.parser.parse(papers, acronym);
+    }
     
 }

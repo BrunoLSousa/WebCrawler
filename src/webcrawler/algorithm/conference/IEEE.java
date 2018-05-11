@@ -113,7 +113,7 @@ public class IEEE extends ConferenceCrawler {
      * information about pages number.
      */
     private int calculatePagination(Document htmlDocument) {
-        Elements bolds = htmlDocument.select("div[class='results-display']> b");
+        Elements bolds = htmlDocument.select("div[class='results-display'] > b");
         String[] pagination = bolds.get(0).text().split("- ");
         int limit = Integer.parseInt(pagination[1]);
         int totalLinks = Integer.parseInt(bolds.get(1).text());

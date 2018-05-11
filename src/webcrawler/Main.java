@@ -24,7 +24,7 @@ public class Main {
 //        JournalCrawler journal = new TOSI();
 //        journal.search("http://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=32");
         ConferenceCrawler conference = new IEEE();
-        conference.search("http://ieeexplore.ieee.org/xpl/conhome.jsp?punumber=1000691");
+        conference.search("http://ieeexplore.ieee.org/xpl/conhome.jsp?punumber=1000691", "ICSE");
     }
     
 }
