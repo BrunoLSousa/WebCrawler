@@ -9,6 +9,6 @@ package webcrawler.datastructure;
  *
  * @author bruno
  */
-public class Paper {
+public class Conference {
     
 }
