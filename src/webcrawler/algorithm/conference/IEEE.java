@@ -87,7 +87,8 @@ public class IEEE extends ConferenceCrawler {
                     Elements blocks = htmlDocument.select("ul[class='results']");
                     
                     for (Element content : blocks.select("li")) {
-                        if(!content.select("a[class='art-abs-url']").attr("href").isEmpty() && !content.select("div[class='authors']").text().isEmpty()){
+//                        if(!content.select("a[class='art-abs-url']").attr("href").isEmpty() && !content.select("div[class='authors']").text().isEmpty()){
+                    if(!content.select("a[class='art-abs-url']").attr("href").isEmpty() && content.select("div[class='controls']").text().contains("Abstract")){
                             this.papers.add(content.select("a[class='art-abs-url']").get(0).absUrl("href"));
                         }
                     }

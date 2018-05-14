@@ -6,15 +6,20 @@
 package webcrawler.algorithm.journal;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import webcrawler.algorithm.JournalCrawler;
+import webcrawler.algorithm.conference.IEEE;
 
 /**
- *This class specify the JournalCrawler class. Its goal is to search papers link reference to TOSI journal.
+ * This class specify the JournalCrawler class. Its goal is to search papers
+ * link reference to TOSI journal.
+ *
  * @author bruno & mivian
  */
 public class TOSI extends JournalCrawler {
@@ -27,8 +32,10 @@ public class TOSI extends JournalCrawler {
     }
 
     /**
-     * Specific implementation of the TOSI class. 
-     * @param url Url reference to journal homepage that contains all volumes history.
+     * Specific implementation of the TOSI class.
+     *
+     * @param url Url reference to journal homepage that contains all volumes
+     * history.
      */
     @Override
     public boolean searchVolumes(String url) {
@@ -43,15 +50,9 @@ public class TOSI extends JournalCrawler {
                 return false;
             }
 
-            Elements links = htmlDocument.select("div[class='level']");
-
-            for (Element blocks : links) {
-                String temp = "" + blocks.select("a").get(0).attr("abs:href");
-                if (temp.contains("isnumber") && temp.contains("&punumber=32") && !temp.contains("mostRecent")) {
-                    for (Element link : blocks.select("a[href]")) {
-                        this.volumes.add(link.absUrl("href"));
-                    }
-                }
+            Element block = htmlDocument.select("div[id='past-issues'] > div[class='volumes'] > div[class='level']").get(0);
+            for (Element link : block.select("a[href]")) {
+                this.volumes.add(link.absUrl("href"));
             }
 
             System.out.println("Total de volumes encontrados: " + volumes.size());
@@ -64,7 +65,7 @@ public class TOSI extends JournalCrawler {
     }
 
     /**
-     * Specific implementation of the TOSI class. 
+     * Specific implementation of the TOSI class.
      */
     @Override
     protected void searchPapers() {
@@ -72,28 +73,82 @@ public class TOSI extends JournalCrawler {
         int cont = 1;
         float percent;
         System.out.println("Inicializando busca de artigos....");
-        for (String volume : this.volumes) {
-            try {
-                Connection connection = Jsoup.connect(volume).userAgent(USER_AGENT);
-                htmlDocument = connection.get();
+//        for (String volume : this.volumes) {
+        int index = 0;
+        while (index < this.volumes.size()) {
+            String volume = this.volumes.get(index);
+            System.out.println("Volume Iniciado - " + volume);
+            htmlDocument = connectURL(volume);
+            int pages = calculatePagination(htmlDocument);
+            if (pages > 0) {
+                String url = getFilter(htmlDocument);
 
-//                if (!connection.response().contentType().contains("text/html")) {
-//                    System.out.println("**Failure** Retried something other than HTML");
-//                    return false;
-//                }
-                Elements blocks = htmlDocument.select("ul[class='results']");
+                for (int i = 1; i <= pages; i++) {
+                    Elements blocks = htmlDocument.select("ul[class='results']");
 
-                for (Element link : blocks.select("a[class='art-abs-url']")) {
-                    this.papers.add(link.absUrl("href"));
+                    for (Element content : blocks.select("li")) {
+                        if (!content.select("a[class='art-abs-url']").attr("href").isEmpty() && content.select("div[class='controls']").text().contains("Abstract")) {
+                            this.papers.add(content.select("a[class='art-abs-url']").get(0).absUrl("href"));
+                        }
+                    }
+
+                    htmlDocument = ((i + 1) <= pages) ? connectURL(url + (i + 1)) : htmlDocument;
+
                 }
-                
-            } catch (IOException e) {
-                return;
+
+                System.out.println(cont + "/" + this.volumes.size() + " concluído...");
+                cont++;
+                index++;
             }
-            System.out.println(cont + "/" + this.volumes.size() + " concluído...");
-            cont++;
         }
         System.out.println("Busca concluída!");
     }
-    
+
+    /**
+     * Calculate the amount of pages existing at a specific proceeding based on
+     * the pagination size to get all links.
+     *
+     * @param htmlDocument Document of first page already open to obtain
+     * information about pages number.
+     */
+    private int calculatePagination(Document htmlDocument) {
+        Elements bolds = htmlDocument.select("div[class='results-display'] > b");
+        if (bolds.size() > 0) {
+            String[] pagination = bolds.get(0).text().split("- ");
+            int limit = Integer.parseInt(pagination[1]);
+            int totalLinks = Integer.parseInt(bolds.get(1).text());
+            return ((totalLinks % limit) == 0) ? totalLinks / limit : (totalLinks / limit) + 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Calculate the amount of pages existing at a specific proceeding based on
+     * the pagination size to get all links.
+     *
+     * @param htmlDocument Home page proceeding link.
+     */
+    private String getFilter(Document htmlDocument) {
+        Element oqs = htmlDocument.getElementById("oqs");
+        String url = htmlDocument.location() + "&" + oqs.val() + "&pageNumber=";
+        return url;
+    }
+
+    /**
+     * Returns the html content of a url.
+     *
+     *
+     * @param htmlDocument Home page proceeding link.
+     */
+    private Document connectURL(String url) {
+        Connection connection;
+        try {
+            connection = Jsoup.connect(url).userAgent(USER_AGENT);
+            return connection.get();
+        } catch (IOException ex) {
+            Logger.getLogger(IEEE.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
 }
