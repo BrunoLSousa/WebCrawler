@@ -44,7 +44,7 @@ public class IEEE extends ConferenceCrawler {
     public boolean searchProceedings(String url) {
         Document htmlDocument;
         try {
-            Connection connection = Jsoup.connect(url).userAgent(USER_AGENT);
+            Connection connection = Jsoup.connect(url).timeout(0).userAgent(USER_AGENT);
             htmlDocument = connection.get();
 
             if (!connection.response().contentType().contains("text/html")) {
@@ -142,7 +142,7 @@ public class IEEE extends ConferenceCrawler {
     private Document connectURL(String url){
         Connection connection;
         try {
-            connection = Jsoup.connect(url).userAgent(USER_AGENT);
+            connection = Jsoup.connect(url).timeout(0).userAgent(USER_AGENT);
             return connection.get();
         } catch (IOException ex) {
             Logger.getLogger(IEEE.class.getName()).log(Level.SEVERE, null, ex);
