@@ -23,14 +23,14 @@ import webcrawler.algorithm.ConferenceCrawler;
  *
  * @author bruno & mivian
  */
-public class IEEE extends ConferenceCrawler {
+public class IEEEConference extends ConferenceCrawler {
 
     private int totatLinks;
 
     /**
      * Constructor method of this class.
      */
-    public IEEE() {
+    public IEEEConference() {
         super();
     }
 
@@ -145,7 +145,7 @@ public class IEEE extends ConferenceCrawler {
             connection = Jsoup.connect(url).timeout(0).userAgent(USER_AGENT);
             return connection.get();
         } catch (IOException ex) {
-            Logger.getLogger(IEEE.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(IEEEConference.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }  

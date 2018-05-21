@@ -15,8 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import webcrawler.algorithm.ConferenceCrawler;
 import webcrawler.algorithm.JournalCrawler;
-import webcrawler.algorithm.conference.IEEE;
-import webcrawler.algorithm.journal.TOSI;
+import webcrawler.algorithm.conference.IEEEConference;
+import webcrawler.algorithm.journal.IEEEJournal;
 
 /**
  *
@@ -73,10 +73,10 @@ public class WebCrawler {
         for (String link : this.links) {
             String[] split = link.split(",");
             if (split[2].equals("conference")) {
-                ConferenceCrawler conference = new IEEE();
+                ConferenceCrawler conference = new IEEEConference();
                 conference.search(split[0], split[1]);
             } else {
-                JournalCrawler journal = new TOSI();
+                JournalCrawler journal = new IEEEJournal();
                 journal.search(split[0], split[1]);
             }
         }

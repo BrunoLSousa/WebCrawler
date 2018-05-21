@@ -14,7 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import webcrawler.algorithm.JournalCrawler;
-import webcrawler.algorithm.conference.IEEE;
+import webcrawler.algorithm.conference.IEEEConference;
 
 /**
  * This class specify the JournalCrawler class. Its goal is to search papers
@@ -22,12 +22,12 @@ import webcrawler.algorithm.conference.IEEE;
  *
  * @author bruno & mivian
  */
-public class TOSI extends JournalCrawler {
+public class IEEEJournal extends JournalCrawler {
 
     /**
      * Constructor method of this class.
      */
-    public TOSI() {
+    public IEEEJournal() {
         super();
     }
 
@@ -146,7 +146,7 @@ public class TOSI extends JournalCrawler {
             connection = Jsoup.connect(url).timeout(0).userAgent(USER_AGENT);
             return connection.get();
         } catch (IOException ex) {
-            Logger.getLogger(IEEE.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(IEEEConference.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
