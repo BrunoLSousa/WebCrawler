@@ -60,28 +60,22 @@ public class Parser {
     private void explortCSVData(List<Paper> papers, String acronym) {
 
         BufferedWriter writer;
-        String auxFirstAffiliation;
+        String auxFirstAffiliation = "";
         int i;
         try {
             System.out.println("Gerando o arquivo csv...");
             writer = new BufferedWriter(new FileWriter("papers_" + acronym.toLowerCase() + ".csv"));
-            // Escrever titulo das colunas na primira linha do arquivo
-//            writer.write("Title;Name;Affiliation;Name;Affiliation;Name;Affiliation;Name;Affiliation;"
-//                    + "Name,Affiliation,Name,Affiliation,Name,Affiliation,Name,Affiliation,"
-//                    + "Name,Affiliation,Name,Affiliation," + "Year,Publication,Paper Type,Citation,Download;"
-//                    + "Keywords,Url,Acronym");
             writer.write("title;authors;affiliations;publication;year;paper_type;citation;download;"
                     + "keywords_ieee;keywords_controlled;keywords_non_controlled;keywords_author;url;acronym");
 
             for (Paper paper : papers) {
                 writer.newLine();
-                writer.write("\"" + paper.getTitle() + "\";");
+                String title = (paper.getTitle() != null) ? paper.getTitle().replace("\"", "'") : "";
+                writer.write("\"" + title + "\";");
 
-                if (paper.getAuthors() != null) {
+                if (paper.getAuthors().size() > 0) {
 
-//                    writer.write(paper.getAuthors().get(0).getName() + ";");
                     auxFirstAffiliation = (paper.getAuthors().get(0).getAffiliation() != null) ? paper.getAuthors().get(0).getAffiliation() : "";
-//                    writer.write(auxFirstAffiliation + ";");
                     String names = "";
                     String affiliations = "";
                     boolean first = true;
@@ -96,30 +90,15 @@ public class Parser {
                         }
                     }
 
-                    writer.write("\"" + names + "\";");
-                    writer.write("\"" + affiliations + "\";");
-
-//                    for (i = 1; i < NUM_AUTHOR; i++) {
-//                        writer.write(paper.getAuthors().get(i).getName() + ",");
-//
-//                        if (paper.getAuthors().get(i).getAffiliation() != null) {
-//                            writer.write(paper.getAuthors().get(i).getAffiliation() + ",");
-//                        } else {
-//                            writer.write(auxFirstAffiliation + ",");
-//                        }
-//                    }
-//
-//                    if (i < NUM_AUTHOR) {
-//                        writer.write("null,null,");
-//                        i++;
-//                    }
+                    writer.write("\"" + names.replace("\"", "\'") + "\";");
+                    writer.write("\"" + affiliations.replace("\"", "\'") + "\";");
                 } else {
                     writer.write(" ;");
                     writer.write(" ;");
                 }
-                writer.write("\"" + paper.getVehicle() + "\";");
+                writer.write("\"" + paper.getVehicle().replace("\"", "\'") + "\";");
                 writer.write("\"" + paper.getYear() + "\";");
-                writer.write("\"" + paper.getType() + "\";");
+                writer.write("\"" + paper.getType().replace("\"", "\'") + "\";");
 
                 if (paper.getMetrics() != null) {
                     writer.write("\"" + paper.getMetrics().getCitation() + "\";");
@@ -155,10 +134,10 @@ public class Parser {
                             keywordAuthor = kw;
                         }
                     }
-                    writer.write("\"" + keywordIEEE + "\";");
-                    writer.write("\"" + keywordControlled + "\";");
-                    writer.write("\"" + keywordNonControlled + "\";");
-                    writer.write("\"" + keywordAuthor + "\";");
+                    writer.write("\"" + keywordIEEE.replace("\"", "\'") + "\";");
+                    writer.write("\"" + keywordControlled.replace("\"", "\'") + "\";");
+                    writer.write("\"" + keywordNonControlled.replace("\"", "\'") + "\";");
+                    writer.write("\"" + keywordAuthor.replace("\"", "\'") + "\";");
                 } else {
                     writer.write(" ;");
                     writer.write(" ;");
@@ -176,26 +155,6 @@ public class Parser {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        /*
-		 * for (Paper paper : papers) { System.out.println("Title: " +
-		 * paper.getTitle()); System.out.println("Authors:"); if (paper.getAuthors() !=
-		 * null) { for (Author author : paper.getAuthors()) {
-		 * System.out.println("        name: " + author.getName());
-		 * System.out.println("        affiliation: " + author.getAffiliation()); } }
-		 * System.out.println("Year: " + paper.getYear());
-		 * System.out.println("Publication: " + paper.getVehicle());
-		 * System.out.println("Paper Type:" + paper.getType()); if (paper.getMetrics()
-		 * != null) { System.out.println("Citation: " +
-		 * paper.getMetrics().getCitation()); System.out.println("Download: " +
-		 * paper.getMetrics().getDownloads()); } else {
-		 * System.out.println("Citation: "); System.out.println("Download: "); }
-		 * System.out.println("Keywords:"); if (paper.getKeywords() != null) { for
-		 * (Keywords keyword : paper.getKeywords()) { System.out.print("         " +
-		 * keyword.getType() + ": "); for (String kwd : keyword.getKeywords()) {
-		 * System.out.print(kwd + "; "); } System.out.println(); } }
-		 * System.out.println("Paper url: https://ieeexplore.ieee.org" +
-		 * paper.getPdfUrl()); System.out.println("Acronym: " + acronym); }
-         */
     }
 
     /**
@@ -207,7 +166,7 @@ public class Parser {
     private Document connectURL(String url) {
         Connection connection;
         try {
-            connection = Jsoup.connect(url).userAgent(USER_AGENT);
+            connection = Jsoup.connect(url).timeout(0).userAgent(USER_AGENT);
             return connection.get();
         } catch (IOException ex) {
             Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
