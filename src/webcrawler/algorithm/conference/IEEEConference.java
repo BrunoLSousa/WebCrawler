@@ -129,7 +129,7 @@ public class IEEEConference extends ConferenceCrawler {
      */
     private String getFilter(Document htmlDocument) {
         Element oqs = htmlDocument.getElementById("oqs");
-        String url = htmlDocument.location() + "&" + oqs.val() + "&pageNumber=";
+        String url = htmlDocument.location() + "&" + oqs.val().replaceAll(" ", "%20") + "&pageNumber=";
         return url;
     }
     
