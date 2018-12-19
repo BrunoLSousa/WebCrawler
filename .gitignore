@@ -1,6 +1,7 @@
 /build/
 /file/
 /dist/
+/store/
 /nbproject/
 /build.xml
 /manifest.mf
